@@ -15,7 +15,8 @@ export const exampleRouter = createTRPCRouter({
       };
     }),
 
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
+  getSecretMessage: protectedProcedure.query(({ctx}) => {
+    const user = ctx.auth.user?.id;
+    return `you can now see this secret message ${user ? user : "No One"}!`;
   }),
 });

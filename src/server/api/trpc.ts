@@ -1,13 +1,4 @@
 /**
- * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
- * 1. You want to modify request context (see Part 1).
- * 2. You want to create a new middleware or type of procedure (see Part 3).
- *
- * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
- * need to use are documented accordingly near the end.
- */
-
-/**
  * 1. CONTEXT
  *
  * This section defines the "contexts" that are available in the backend API.
@@ -15,14 +6,15 @@
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { type Session } from "next-auth";
+import type { SignedInAuthObject,SignedOutAuthObject } from "@clerk/nextjs/dist/api";
+import { getAuth, clerkClient } from "@clerk/nextjs/server";
+import firebase from "../firebase-admin/firebase"; 
+const {db} = firebase;
 
-import { getServerAuthSession } from "~/server/auth";
-
-type CreateContextOptions = {
-  session: Session | null;
-};
-
+interface AuthContext {
+  auth: SignedInAuthObject | SignedOutAuthObject;
+  user: User;
+}
 /**
  * This helper generates the "internals" for a tRPC context. If you need to use it, you can export
  * it from here.
@@ -33,12 +25,11 @@ type CreateContextOptions = {
  *
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
-const createInnerTRPCContext = (opts: CreateContextOptions) => {
+export const createContextInner = ({ auth }: AuthContext  ) => {
   return {
-    session: opts.session,
+    auth,
   };
 };
-
 /**
  * This is the actual context you will use in your router. It will be used to process every request
  * that goes through your tRPC endpoint.
@@ -46,14 +37,26 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
  * @see https://trpc.io/docs/context
  */
 export const createTRPCContext = async (opts: CreateNextContextOptions) => {
-  const { req, res } = opts;
 
-  // Get the session from the server using the getServerSession wrapper function
-  const session = await getServerAuthSession({ req, res });
+  const auth = getAuth(opts.req);
 
-  return createInnerTRPCContext({
-    session,
-  });
+  const userId = auth.userId;
+
+  const userRef = await db.collection("users").doc(userId!).get();
+  if(!userRef.exists) {
+    const newUser: User = {
+      id: userId!,
+      name: auth.user?.firstName || "",
+      email: auth.user?.emailAddresses[0]?.emailAddress || "",
+    };
+    await db.collection("users").doc(userId!).set(newUser);
+    
+    return createContextInner({ auth, user: newUser });
+  }
+
+  const user = userRef.data() as User;
+
+  return createContextInner({ auth, user });
 };
 
 /**
@@ -63,6 +66,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
  */
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
+import { type User } from "~/types/firebase";
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
@@ -94,19 +98,6 @@ export const createTRPCRouter = t.router;
  */
 export const publicProcedure = t.procedure;
 
-/** Reusable middleware that enforces users are logged in before running the procedure. */
-const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
-  return next({
-    ctx: {
-      // infers the `session` as non-nullable
-      session: { ...ctx.session, user: ctx.session.user },
-    },
-  });
-});
-
 /**
  * Protected (authenticated) procedure
  *
@@ -115,4 +106,17 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
  *
  * @see https://trpc.io/docs/procedures
  */
-export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
+
+
+const isAuthed = t.middleware(({ next, ctx }) => {
+  if (!ctx.auth.userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      auth: ctx.auth,
+    },
+  });
+});
+
+export const protectedProcedure = t.procedure.use(isAuthed);
