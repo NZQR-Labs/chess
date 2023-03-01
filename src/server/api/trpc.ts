@@ -7,8 +7,12 @@
  */
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import type { SignedInAuthObject,SignedOutAuthObject } from "@clerk/nextjs/dist/api";
+import type * as trpc from "@trpc/server";
+import type * as trpcNext from "@trpc/server/adapters/next";
+
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import firebase from "../firebase-admin/firebase"; 
+import { type User } from "~/types/firebase";
 const {db} = firebase;
 
 interface AuthContext {
@@ -25,9 +29,10 @@ interface AuthContext {
  *
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
-export const createContextInner = ({ auth }: AuthContext  ) => {
+export const createContextInner = ({ auth, user }: AuthContext ) => {
   return {
     auth,
+    user,
   };
 };
 /**
@@ -36,7 +41,7 @@ export const createContextInner = ({ auth }: AuthContext  ) => {
  *
  * @see https://trpc.io/docs/context
  */
-export const createTRPCContext = async (opts: CreateNextContextOptions) => {
+export const createTRPCContext = async (opts: trpcNext.CreateNextContextOptions) => {
 
   const auth = getAuth(opts.req);
 
@@ -59,6 +64,8 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   return createContextInner({ auth, user });
 };
 
+export type Context = trpc.inferAsyncReturnType<typeof createTRPCContext>
+
 /**
  * 2. INITIALIZATION
  *
@@ -66,7 +73,6 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
  */
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { type User } from "~/types/firebase";
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
@@ -115,6 +121,7 @@ const isAuthed = t.middleware(({ next, ctx }) => {
   return next({
     ctx: {
       auth: ctx.auth,
+      user: ctx.user,
     },
   });
 });
