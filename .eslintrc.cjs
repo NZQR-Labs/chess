@@ -1,5 +1,6 @@
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
+  root: true,
   overrides: [
     {
       extends: [
@@ -25,5 +26,9 @@ module.exports = {
         fixStyle: "inline-type-imports",
       },
     ],
+    "no-console": "off",
+    "indent": ["error", 2],
+    "quotes": [2, "double"],
+    "semi": [2, "always"]
   },
 };
