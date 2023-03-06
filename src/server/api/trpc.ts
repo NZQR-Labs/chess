@@ -5,12 +5,11 @@
  *
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
-import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import type { SignedInAuthObject,SignedOutAuthObject } from "@clerk/nextjs/dist/api";
 import type * as trpc from "@trpc/server";
 import type * as trpcNext from "@trpc/server/adapters/next";
-
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
+
 import firebase from "../firebase-admin/firebase"; 
 import { type User } from "~/types/firebase";
 const {db} = firebase;
@@ -19,6 +18,7 @@ interface AuthContext {
   auth: SignedInAuthObject | SignedOutAuthObject;
   user: User;
 }
+
 /**
  * This helper generates the "internals" for a tRPC context. If you need to use it, you can export
  * it from here.
@@ -29,10 +29,11 @@ interface AuthContext {
  *
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
-export const createContextInner = ({ auth, user }: AuthContext ) => {
+export const createContextInner = ({ auth, user }: AuthContext) => {
   return {
     auth,
     user,
+    db
   };
 };
 /**
@@ -54,6 +55,7 @@ export const createTRPCContext = async (opts: trpcNext.CreateNextContextOptions)
       name: auth.user?.firstName || "",
       email: auth.user?.emailAddresses[0]?.emailAddress || "",
     };
+
     await db.collection("users").doc(userId!).set(newUser);
     
     return createContextInner({ auth, user: newUser });
