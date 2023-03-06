@@ -7,7 +7,7 @@ import { useState } from "react";
 import {Chess} from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { type Piece, type Square } from "react-chessboard/dist/chessboard/types";
-import IllegalMoveModal from "./illegalMoveAlert";
+import IllegalMoveModal from "./IllegalMoveAlert";
 
 interface Props {
   width: number;
