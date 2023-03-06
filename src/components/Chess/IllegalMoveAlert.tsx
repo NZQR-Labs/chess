@@ -10,7 +10,7 @@ const IllegalMoveModal: React.FC<Props> = ({open, setOpen, errorMessage}) => {
 
   return (
     <div>      
-      <input checked={open} type="checkbox" id="my-modal-6" className="modal-toggle" />
+      <input checked={open} type="checkbox" id="my-modal-6" readOnly className="modal-toggle" />
 
       <div className="modal modal-bottom sm:modal-middle">
         <div className="modal-box">
