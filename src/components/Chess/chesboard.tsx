@@ -7,6 +7,7 @@ import { useState } from "react";
 import {Chess} from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { type Piece, type Square } from "react-chessboard/dist/chessboard/types";
+import IllegalMoveModal from "./IllegalMoveAlert";
 
 interface Props {
   width: number;
@@ -14,11 +15,19 @@ interface Props {
 
 const Board: React.FC<Props> = ({width}) => {
   const [game, setGame] = useState(new Chess());
+  const [moveError, setError] = useState<any>(); 
+  const [open, setOpen] = useState(false); 
 
   const makeMove = (move: string | { from: string; to: string; promotion?: string | undefined; }) => {
     const gameCopy = new Chess();
     gameCopy.loadPgn(game.pgn());
-    gameCopy.move(move);
+    try {
+      gameCopy.move(move);
+    }
+    catch (error) {
+      setOpen(true); 
+      setError((error as any)?.message);
+    }
     setGame(gameCopy);
   };
 
@@ -30,7 +39,10 @@ const Board: React.FC<Props> = ({width}) => {
     return true;
   };
 
-  return <Chessboard boardWidth={width} position={game.fen()} onPieceDrop={onDrop} />;
+  return <>
+    <IllegalMoveModal open={open} setOpen={setOpen} errorMessage={moveError} />
+    <Chessboard boardWidth={width} position={game.fen()} onPieceDrop={onDrop} />
+  </>;
 };
 
 export default Board;

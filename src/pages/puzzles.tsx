@@ -1,10 +1,13 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-
-import { api } from "~/utils/api";
+import { useState } from "react";
+import {useSubscription} from "~/hooks/useSubscription";
 
 const Puzzles: NextPage = () => {
-  
+  const [test, setTest] = useState<{test: number}>({
+    test: 0
+  });
+  useSubscription("test", "test", setTest);
 
   return (
     <>
@@ -14,7 +17,9 @@ const Puzzles: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center">
-   
+        <div>
+          {test?.test}
+        </div>
       </main>
     </>
   );
