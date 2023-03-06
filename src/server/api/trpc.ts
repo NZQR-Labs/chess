@@ -5,6 +5,7 @@
  *
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
+import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import type { SignedInAuthObject,SignedOutAuthObject } from "@clerk/nextjs/dist/api";
 import type * as trpc from "@trpc/server";
 import type * as trpcNext from "@trpc/server/adapters/next";
