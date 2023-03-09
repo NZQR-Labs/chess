@@ -3,6 +3,8 @@ import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { Piece, Square } from "react-chessboard/dist/chessboard/types";
 import PlayAgainAlert from "./PlayAgainAlert";
+import Stockfish from "stockfish.js";
+
 
 interface Props {
   width: number;
@@ -13,6 +15,7 @@ const Board: React.FC<Props> = ({ width }) => {
   const [moveError, setError] = useState<any>();
   const [playAgain, setPlayAgain] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (game.turn() === "b") {
@@ -59,10 +62,14 @@ const Board: React.FC<Props> = ({ width }) => {
       to: endSquare,
     };
     if (startSquare && endSquare && piece) {
+      const color = piece[0] === "w" ? "w" : "b";
       if (
-        piece.type === "p" &&
-        ((piece.color === "w" && endSquare[1] === "8") ||
-          (piece.color === "b" && endSquare[1] === "1"))
+        piece === "wP" ||
+        piece === "bP" ||
+        (piece === "wK" && startSquare === "e1" && endSquare === "g1") ||
+        (piece === "bK" && startSquare === "e8" && endSquare === "g8") ||
+        (piece === "wK" && startSquare === "e1" && endSquare === "c1") ||
+        (piece === "bK" && startSquare === "e8" && endSquare === "c8")
       ) {
         move = {
           ...move,
@@ -70,9 +77,9 @@ const Board: React.FC<Props> = ({ width }) => {
         };
       }
       if (typeof move === "object" && "from" in move && "to" in move) {
-        makeMove(move);
+        makeMove(move, color);
       } else if (typeof move === "string") {
-        makeMove(move);
+        makeMove(move, color);
       }
     }
     return true;
