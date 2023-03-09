@@ -2,39 +2,40 @@ import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { Piece, Square } from "react-chessboard/dist/chessboard/types";
-import IllegalMoveModal from "./IllegalMoveAlert";
+import PlayAgainAlert from "./PlayAgainAlert";
+
 interface Props {
   width: number;
 }
 
-const Board: React.FC<Props> = ({width}) => {
+const Board: React.FC<Props> = ({ width }) => {
   const [game, setGame] = useState(new Chess());
-  const [moveError, setError] = useState<any>(); 
-  const [open, setOpen] = useState(false);
+  const [moveError, setError] = useState<any>();
+  const [playAgain, setPlayAgain] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
 
-useEffect(() => {
-  if (game.turn() === 'b') {
-    const possibleMoves = game.moves();
-    if (possibleMoves.length > 0) {
-      const randomIndex = Math.floor(Math.random() * possibleMoves.length);
-      const move = possibleMoves[randomIndex];
-      if (move) {
-        makeMove(move);
+  useEffect(() => {
+    if (game.turn() === "b") {
+      const possibleMoves = game.moves();
+      if (possibleMoves.length > 0) {
+        const randomIndex = Math.floor(Math.random() * possibleMoves.length);
+        const move = possibleMoves[randomIndex];
+        if (move) {
+          makeMove(move);
+        }
       }
     }
-  }
-}, [game]);
+  }, [game]);
 
-
-  const makeMove = (move: string | { from: string; to: string; promotion?: string | undefined; }) => {
+  const makeMove = (
+    move: string | { from: string; to: string; promotion?: string | undefined }
+  ) => {
     const gameCopy = new Chess();
     gameCopy.loadPgn(game.pgn());
     try {
       gameCopy.move(move);
-    }
-    catch (error) {
-      setOpen(true);
+    } catch (error) {
+      console.log("Invalid move detected.");
       setError((error as any)?.message);
     }
     setGame(gameCopy);
@@ -43,6 +44,7 @@ useEffect(() => {
       if (gameCopy.isCheckmate()) {
         const winnerColor = gameCopy.turn() === "w" ? "Black" : "White";
         setWinner(winnerColor);
+        setPlayAgain(true);
       }
     }
   };
@@ -75,10 +77,10 @@ useEffect(() => {
     }
     return true;
   };
-  
 
   const resetGame = () => {
     setGame(new Chess());
+    setPlayAgain(false);
     setWinner(null);
   };
 
@@ -90,18 +92,16 @@ useEffect(() => {
         </div>
         <div>
           {winner ? (
-            <>
-              <p>{`${winner} wins!`}</p>
-              <button className="play-again-button" onClick={resetGame}>
-  Play again
-</button>
-            </>
+            <PlayAgainAlert
+              open={playAgain}
+              winner={winner}
+              onReset={resetGame}
+            />
           ) : (
             <p>Current player: {game.turn() === "w" ? "White" : "Black"}</p>
           )}
         </div>
       </div>
-      <IllegalMoveModal open={open} setOpen={setOpen} errorMessage={moveError} />
     </>
   );
 };
