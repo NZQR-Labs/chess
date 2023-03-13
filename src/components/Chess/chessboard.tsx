@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
-import { Piece, Square } from "react-chessboard/dist/chessboard/types";
+import type { Piece, Square } from "react-chessboard/dist/chessboard/types";
 import PlayAgainAlert from "./PlayAgainAlert";
-import Stockfish from "stockfish.js";
 
 
 interface Props {
@@ -39,7 +38,7 @@ const Board: React.FC<Props> = ({ width }) => {
       gameCopy.move(move);
     } catch (error) {
       console.log("Invalid move detected.");
-      setError((error as any)?.message);
+      setError((error as {message: string})?.message);
     }
     setGame(gameCopy);
 
@@ -62,7 +61,6 @@ const Board: React.FC<Props> = ({ width }) => {
       to: endSquare,
     };
     if (startSquare && endSquare && piece) {
-      const color = piece[0] === "w" ? "w" : "b";
       if (
         piece === "wP" ||
         piece === "bP" ||
@@ -77,9 +75,9 @@ const Board: React.FC<Props> = ({ width }) => {
         };
       }
       if (typeof move === "object" && "from" in move && "to" in move) {
-        makeMove(move, color);
+        makeMove(move);
       } else if (typeof move === "string") {
-        makeMove(move, color);
+        makeMove(move);
       }
     }
     return true;
