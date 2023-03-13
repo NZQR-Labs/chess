@@ -10,6 +10,9 @@ import type { SignedInAuthObject,SignedOutAuthObject } from "@clerk/nextjs/dist/
 import type * as trpc from "@trpc/server";
 import type * as trpcNext from "@trpc/server/adapters/next";
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 
 import firebase from "../firebase-admin/firebase"; 
 import { type User } from "~/types/firebase";
@@ -51,10 +54,13 @@ export const createTRPCContext = async (opts: trpcNext.CreateNextContextOptions)
 
   const userRef = await db.collection("users").doc(userId!).get();
   if(!userRef.exists) {
+    dayjs.extend(timezone); 
+    dayjs.extend(utc);
     const newUser: User = {
       id: userId!,
       name: auth.user?.firstName || "",
       email: auth.user?.emailAddresses[0]?.emailAddress || "",
+      createdAt: dayjs().tz("America/Los_Angeles").format("YYYY-MM-DDTHH:mm:ssZ[Z]")
     };
 
     await db.collection("users").doc(userId!).set(newUser);

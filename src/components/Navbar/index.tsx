@@ -6,6 +6,13 @@ type Props = {
 };
 
 const Navbar: React.FC<Props> = ({children}) => {
+
+  const handleCloseDrawer = () => {
+    const el = document.getElementById("my-drawer-3") as HTMLInputElement; 
+    el.checked = false; 
+    return; 
+  };
+
   return (
     <div data-theme="luxury" className="drawer">
       <input id="my-drawer-3" type="checkbox" className="drawer-toggle" /> 
@@ -21,6 +28,7 @@ const Navbar: React.FC<Props> = ({children}) => {
             <ul className="menu menu-horizontal">
               <li><Link href="/"> Home </Link></li>
               <li><Link href="/puzzles"> My Puzzles </Link></li>
+              <li><Link href="/subscriptions"> Subscriptions </Link></li>
               <li><Link href="/settings"> Settings </Link></li>
             </ul>
           </div>
@@ -30,11 +38,11 @@ const Navbar: React.FC<Props> = ({children}) => {
       <div className="drawer-side">
         <label htmlFor="my-drawer-3" className="drawer-overlay"></label> 
         <ul className="menu p-4 w-80 bg-base-100">
-          <li><Link href="/"> Home </Link></li>
-          <li><Link href="/puzzles"> My Puzzles </Link></li>
-          <li><Link href="/settings"> Settings </Link></li>
+          <li><Link onClick={handleCloseDrawer} href="/"> Home </Link></li>
+          <li><Link onClick={handleCloseDrawer} href="/puzzles"> My Puzzles </Link></li>
+          <li><Link onClick={handleCloseDrawer} href="/subscriptions"> Subscriptions </Link></li>
+          <li><Link onClick={handleCloseDrawer} href="/settings"> Settings </Link></li>
         </ul>
-    
       </div>
     </div>
   );

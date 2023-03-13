@@ -8,8 +8,6 @@ import useBreakPoints from "~/hooks/useBreakPoints";
 const Settings: NextPage = () => {
   const {signOut} = useClerk(); 
   const {data} = api.users.userProfile.useQuery();
-  const {s} = useBreakPoints(); 
-
   return (
     <>
       <Head>
