@@ -1,1 +1,1 @@
-declare module 'stockfish.js';
+declare module "stockfish.js";
