@@ -1,12 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { useState, useEffect } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import type { Piece, Square } from "react-chessboard/dist/chessboard/types";
 import PlayAgainAlert from "./PlayAgainAlert";
-
+import IllegalMoveModal from "./IllegalMoveAlert";
 
 interface Props {
   width: number;
+}
+
+interface Error {
+  message: string; 
 }
 
 const Board: React.FC<Props> = ({ width }) => {
@@ -14,7 +20,7 @@ const Board: React.FC<Props> = ({ width }) => {
   const [moveError, setError] = useState<any>();
   const [playAgain, setPlayAgain] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
-
+  const [open, setOpen] = useState(false); 
 
   useEffect(() => {
     if (game.turn() === "b") {
@@ -38,7 +44,8 @@ const Board: React.FC<Props> = ({ width }) => {
       gameCopy.move(move);
     } catch (error) {
       console.log("Invalid move detected.");
-      setError((error as {message: string})?.message);
+      setOpen(true); 
+      setError((error as any).message);
     }
     setGame(gameCopy);
 
@@ -106,6 +113,8 @@ const Board: React.FC<Props> = ({ width }) => {
             <p>Current player: {game.turn() === "w" ? "White" : "Black"}</p>
           )}
         </div>
+
+        <IllegalMoveModal open={open} setOpen={setOpen} errorMessage={moveError} />
       </div>
     </>
   );
