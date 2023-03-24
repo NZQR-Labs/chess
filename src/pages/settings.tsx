@@ -3,11 +3,47 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import { useClerk } from "@clerk/clerk-react";
 import { api } from "~/utils/api";
-import useBreakPoints from "~/hooks/useBreakPoints";
+import { AiFillEdit } from "react-icons/ai";
+import { MdCancel } from "react-icons/md";
+import React from "react";
+import { User } from "~/types/firebase";
 
 const Settings: NextPage = () => {
+  const [user, setUser] = React.useState<Partial<User>>(); 
   const {signOut} = useClerk(); 
   const {data} = api.users.userProfile.useQuery();
+  const updateProfile = api.users.setUsernameAndEmail.useMutation(); 
+  const [error, setError] = React.useState<string>("");
+  const [editing, setEditing] = React.useState(false); 
+
+  const onSaveChanges = async () => {
+    if(user?.email === "" || user?.name === "") {
+      setError("Username or email are too short."); 
+      return; 
+    }
+    else if(user?.email && user.name) {
+      const updateProfileResults = await updateProfile.mutateAsync({
+        username: user?.name,
+        email: user?.email
+      }); 
+      if(updateProfileResults.error) {
+        setError(updateProfileResults.message); 
+      }
+      else if(updateProfileResults.success && updateProfileResults.data) {
+        setUser(updateProfileResults.data); 
+        setEditing(false); 
+        setError(" ");
+      } else {
+        setError("Couldnt update profile.");
+      }
+    }
+
+  };
+
+  React.useEffect(() => {
+    setUser(data);
+  }, [data]);
+
   return (
     <>
       <Head>
@@ -20,9 +56,32 @@ const Settings: NextPage = () => {
           <figure><img loading="lazy" src="/test.jpg" alt="Profile Image"/></figure>
           <div className="card-body">
             <h2 className="card-title">Profile</h2>
-            <p> {data?.name || "Username"} </p>
-            <p> {data?.email || "User Email"} </p>
-            <p> MMR: 3000 </p>
+            {
+              !editing ? (<>
+                <div onClick={() => setEditing(true)} className="flex flex-row items-center content-center justify-between cursor-pointer"> {user?.name || "Set Username"} <AiFillEdit /></div> 
+                <div onClick={() => setEditing(true)} className="flex flex-row items-center content-center justify-between cursor-pointer"> {user?.email || "Set Email"} <AiFillEdit /> </div>
+              </>
+              ) : (<div className="flex flex-col">
+                <div className="flex flex-row items-center content-center justify-between cursor-pointer"> 
+                  <input value={user?.name} onChange={(e) => setUser({...user, name: e.target.value})} type="text" placeholder="Username" className="input input-bordered input-warning w-full max-w-xs" />
+                  <MdCancel onClick={() => {
+                    setEditing(false); 
+                    setUser(data);
+                  }} />
+                </div>
+                <div className="flex flex-row items-center content-center justify-between cursor-pointer"> 
+                  <input value={user?.email} onChange={(e) => setUser({...user, email: e.target.value})} type="text" placeholder="Email" className="input input-bordered input-warning w-full max-w-xs" />
+                  <MdCancel onClick={() => {
+                    setEditing(false); 
+                    setUser(data);
+                  }} />
+                </div>
+                {error && <div className="text-red"> {error} </div>}
+                <button onClick={onSaveChanges} className="btn btn-active">Save Changes</button>
+              </div>
+              )
+            }
+
             <div className="card-actions justify-end">
               <button onClick={() => signOut()} className="btn btn-primary">
                 Sign Out
