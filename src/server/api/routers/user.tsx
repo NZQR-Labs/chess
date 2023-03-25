@@ -31,7 +31,7 @@ export const usersRouter = createTRPCRouter({
     }))
     .mutation(async ({ctx, input}) => {
       const {username, email} = input; 
-      const {user, db} = ctx; 
+      const {user, db} = ctx;
       if(!username || !email || email === "" || username === "") {
         const newResponse: ResponseType = {
           error: true, 
