@@ -3,9 +3,10 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import ChessBoard from "~/components/Chess/chessboard";
 import useBreakPoints from "~/hooks/useBreakPoints";
+import { api } from "~/utils/api";
 
 const Home: NextPage = () => {
-  const {s} = useBreakPoints();
+  const {s} = useBreakPoints()
 
   return (
     <>
