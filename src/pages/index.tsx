@@ -6,7 +6,7 @@ import useBreakPoints from "~/hooks/useBreakPoints";
 import { api } from "~/utils/api";
 
 const Home: NextPage = () => {
-  const {s} = useBreakPoints()
+  const {s} = useBreakPoints();
 
   return (
     <>
