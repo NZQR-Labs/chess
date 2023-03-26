@@ -9,6 +9,7 @@ import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import Navbar from "~/components/Navbar";
 import Footer from "~/components/Footer";
+import { Analytics } from "@vercel/analytics/react";
 import "~/styles/globals.css";
 const publicPages : Array<string> = [];
 
@@ -21,21 +22,24 @@ function MyApp({ Component, pageProps } : AppProps) {
 
   return (
     <ClerkProvider {...pageProps}>
-      {isPublicPage ? (
+      {isPublicPage ? <>
         <Component {...pageProps} />
-      ) : (
+        <Analytics />
+      </>
+        : 
         <>
           <SignedIn>
             <Navbar> 
               <Component {...pageProps} />
               <Footer />
+              <Analytics />
             </Navbar>
           </SignedIn>
           <SignedOut>
             <RedirectToSignIn />
           </SignedOut>
         </>
-      )}
+      }
     </ClerkProvider>
   );
 }
