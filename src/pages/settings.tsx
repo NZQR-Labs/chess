@@ -6,12 +6,13 @@ import { api } from "~/utils/api";
 import { AiFillEdit } from "react-icons/ai";
 import { MdCancel } from "react-icons/md";
 import React from "react";
-import { User } from "~/types/firebase";
+import { type User } from "~/types/firebase";
+import { ColorRing } from  "react-loader-spinner";
 
 const Settings: NextPage = () => {
   const [user, setUser] = React.useState<Partial<User>>(); 
   const {signOut} = useClerk(); 
-  const {data} = api.users.userProfile.useQuery();
+  const {data, isLoading} = api.users.userProfile.useQuery();
   const updateProfile = api.users.setUsernameAndEmail.useMutation(); 
   const [error, setError] = React.useState<string>("");
   const [editing, setEditing] = React.useState(false); 
@@ -41,7 +42,9 @@ const Settings: NextPage = () => {
   };
 
   React.useEffect(() => {
-    setUser(data);
+    if(data?.data) {
+      setUser(data?.data);
+    }
   }, [data]);
 
   return (
@@ -52,43 +55,54 @@ const Settings: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex min-h-screen flex-col items-center">
-        <div className={"card card-side bg-neutral shadow-xl mt-10"}>
-          <figure><img loading="lazy" src="/test.jpg" alt="Profile Image"/></figure>
-          <div className="card-body">
-            <h2 className="card-title">Profile</h2>
-            {
-              !editing ? (<>
-                <div onClick={() => setEditing(true)} className="flex flex-row items-center content-center justify-between cursor-pointer"> {user?.name || "Set Username"} <AiFillEdit /></div> 
-                <div onClick={() => setEditing(true)} className="flex flex-row items-center content-center justify-between cursor-pointer"> {user?.email || "Set Email"} <AiFillEdit /> </div>
-              </>
-              ) : (<div className="flex flex-col">
-                <div className="flex flex-row items-center content-center justify-between cursor-pointer"> 
-                  <input value={user?.name} onChange={(e) => setUser({...user, name: e.target.value})} type="text" placeholder="Username" className="input input-bordered input-warning w-full max-w-xs" />
-                  <MdCancel onClick={() => {
-                    setEditing(false); 
-                    setUser(data);
-                  }} />
+        {
+          isLoading ? <ColorRing
+            visible={true}
+            height="80"
+            width="80"
+            ariaLabel="blocks-loading"
+            wrapperStyle={{}}
+            wrapperClass="blocks-wrapper"
+            colors={["#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"]}
+          /> :       
+            <div className={"card card-side bg-neutral shadow-xl mt-10"}>
+              <figure><img loading="lazy" src="/test.jpg" alt="Profile Image"/></figure>
+              <div className="card-body">
+                <h2 className="card-title">Profile</h2>
+                {
+                  !editing ? (<>
+                    <div onClick={() => setEditing(true)} className="flex flex-row items-center content-center justify-between cursor-pointer"> {user?.name || "Set Username"} <AiFillEdit /></div> 
+                    <div onClick={() => setEditing(true)} className="flex flex-row items-center content-center justify-between cursor-pointer"> {user?.email || "Set Email"} <AiFillEdit /> </div>
+                  </>
+                  ) : (<div className="flex flex-col">
+                    <div className="flex flex-row items-center content-center justify-between cursor-pointer"> 
+                      <input value={user?.name} onChange={(e) => setUser({...user, name: e.target.value})} type="text" placeholder="Username" className="input input-bordered input-warning w-full max-w-xs" />
+                      <MdCancel onClick={() => {
+                        setEditing(false); 
+                        if(data?.data) setUser(data?.data);
+                      }} />
+                    </div>
+                    <div className="flex flex-row items-center content-center justify-between cursor-pointer"> 
+                      <input value={user?.email} onChange={(e) => setUser({...user, email: e.target.value})} type="text" placeholder="Email" className="input input-bordered input-warning w-full max-w-xs" />
+                      <MdCancel onClick={() => {
+                        setEditing(false); 
+                        if(data?.data) setUser(data?.data);
+                      }} />
+                    </div>
+                    {error && <div className="text-red"> {error} </div>}
+                    <button onClick={onSaveChanges} className="btn btn-active">Save Changes</button>
+                  </div>
+                  )
+                }
+          
+                <div className="card-actions justify-end">
+                  <button onClick={() => signOut()} className="btn btn-primary">
+                          Sign Out
+                  </button>
                 </div>
-                <div className="flex flex-row items-center content-center justify-between cursor-pointer"> 
-                  <input value={user?.email} onChange={(e) => setUser({...user, email: e.target.value})} type="text" placeholder="Email" className="input input-bordered input-warning w-full max-w-xs" />
-                  <MdCancel onClick={() => {
-                    setEditing(false); 
-                    setUser(data);
-                  }} />
-                </div>
-                {error && <div className="text-red"> {error} </div>}
-                <button onClick={onSaveChanges} className="btn btn-active">Save Changes</button>
               </div>
-              )
-            }
-
-            <div className="card-actions justify-end">
-              <button onClick={() => signOut()} className="btn btn-primary">
-                Sign Out
-              </button>
             </div>
-          </div>
-        </div>
+        }
       </main>
     </>
   );

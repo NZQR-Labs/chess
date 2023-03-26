@@ -27,7 +27,7 @@ const Navbar: React.FC<Props> = ({children}) => {
           <div className="flex-none hidden lg:block">
             <ul className="menu menu-horizontal">
               <li><Link href="/"> Home </Link></li>
-              <li><Link href="/puzzles"> My Puzzles </Link></li>
+              <li><Link href="/puzzles"> Daily Puzzle </Link></li>
               <li><Link href="/subscriptions"> Subscriptions </Link></li>
               <li><Link href="/settings"> Settings </Link></li>
             </ul>

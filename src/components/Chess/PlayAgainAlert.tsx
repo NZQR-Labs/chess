@@ -18,7 +18,7 @@ const PlayAgainAlert: React.FC<Props> = ({ open, winner, onReset }) => {
       />
 
       <div className="modal modal-bottom sm:modal-middle">
-        <div className="modal-box">
+        <div className="modal-box bg-neutral">
           <h3 className="font-bold text-lg">{`${winner || ""} wins!`}</h3>
           <p className="py-4">Do you want to play again?</p>
           <div className="modal-action">
