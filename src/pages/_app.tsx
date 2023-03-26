@@ -10,7 +10,6 @@ import { api } from "~/utils/api";
 import Navbar from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import "~/styles/globals.css";
-import "../styles/Button.css";
 const publicPages : Array<string> = [];
 
 function MyApp({ Component, pageProps } : AppProps) {
