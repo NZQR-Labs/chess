@@ -6,17 +6,19 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc";
 import { type ChessPuzzlesApiResponse, type ResponseType, type Puzzle } from "~/types";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const {RAPIDAPI_KEY} = process.env; 
 
 export const chessRouter = createTRPCRouter({
-  getSecretMessage: protectedProcedure.query(({ctx}) => {
-    const {db} = ctx;
-    return 0;
-  }),
   getChatGptMove: protectedProcedure
     .input(z.object({query: z.string()}))
-    .query(async ({ctx}) => {
+    .query(async () => {
       const configuration = new Configuration({
         apiKey: process.env.OPENAI_API_KEY,
       });
@@ -29,7 +31,7 @@ export const chessRouter = createTRPCRouter({
     }),
   generatePuzzle: protectedProcedure
     .input(z.object({query: z.string()}))
-    .query(async ({ctx}) => {
+    .query(async () => {
 
       const options: AxiosRequestConfig = {
         method: "GET",
@@ -67,6 +69,30 @@ export const chessRouter = createTRPCRouter({
           return newResponse;
         }
       } catch (error) {
+        const newResponse: ResponseType<null> = {
+          error: true,
+          success: false,
+          message: "Error retrieving chess puzzle",
+          data: null
+        };
+        return newResponse;
+      }
+    }),
+  getDailyPuzzle: protectedProcedure
+    .query(async ({ctx}) => {
+      const {db} = ctx;
+      const date = dayjs().tz("America/Los_Angeles").format("YYYY-MM-DD");
+      const docSnap = await db.collection("puzzles").doc(date).get();
+      if (docSnap.exists) {
+        const newResponse: ResponseType<Puzzle | undefined> = {
+          error: false,
+          success: true,
+          message: "Successfully retrieved chess puzzle",
+          data: docSnap.data() as Puzzle
+        };
+        return newResponse;
+      }
+      else {
         const newResponse: ResponseType<null> = {
           error: true,
           success: false,
