@@ -7,9 +7,10 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
+const {RAPIDAPI_KEY} = process.env; 
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
-
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log("Running daily chess cron job");
@@ -24,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       count: "1"
     },
     headers: {
-      "X-RapidAPI-Key": "6215021120msh364b9d72f9d2b2fp1ba304jsn6e686a50332e",
+      "X-RapidAPI-Key": RAPIDAPI_KEY!,
       "X-RapidAPI-Host": "chess-puzzles.p.rapidapi.com"
     }
   };

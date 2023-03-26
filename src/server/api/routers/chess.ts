@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { Configuration, OpenAIApi } from "openai";
 import axios, {type AxiosRequestConfig} from "axios";
-
 import {
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
 import { type ChessPuzzlesApiResponse, type ResponseType, type Puzzle } from "~/types";
+
+const {RAPIDAPI_KEY} = process.env; 
 
 export const chessRouter = createTRPCRouter({
   getSecretMessage: protectedProcedure.query(({ctx}) => {
@@ -41,7 +42,7 @@ export const chessRouter = createTRPCRouter({
           count: "1"
         },
         headers: {
-          "X-RapidAPI-Key": "6215021120msh364b9d72f9d2b2fp1ba304jsn6e686a50332e",
+          "X-RapidAPI-Key": RAPIDAPI_KEY!,
           "X-RapidAPI-Host": "chess-puzzles.p.rapidapi.com"
         }
       };
