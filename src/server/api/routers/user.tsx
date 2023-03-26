@@ -11,18 +11,28 @@ export const usersRouter = createTRPCRouter({
   userProfile: protectedProcedure.query(({ctx}) => {
     const {user} = ctx;
     if (!user) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You must be logged in to access this route",
-      });
+      const newResponse: ResponseType<null> = {
+        error: true,
+        success: false,
+        message: "No user found.",
+        data: null,
+      };
+      return newResponse;
     }
     
     const profile = {
       name: user.name,
       email: user.email,
     };
+
+    const newResponse: ResponseType<Partial<User>> = {
+      error: false,
+      success: true,
+      data: profile,
+      message: "User found.",
+    };
     
-    return profile; 
+    return newResponse; 
   }),
   setUsernameAndEmail: protectedProcedure
     .input(z.object({
@@ -33,7 +43,7 @@ export const usersRouter = createTRPCRouter({
       const {username, email} = input; 
       const {user, db} = ctx;
       if(!username || !email || email === "" || username === "") {
-        const newResponse: ResponseType = {
+        const newResponse: ResponseType<null> = {
           error: true, 
           success: false, 
           message: "No username or email provided, or they are too short.",
@@ -47,7 +57,7 @@ export const usersRouter = createTRPCRouter({
         curUser.email = email; 
         curUser.name = username; 
         await db.collection("users").doc(user.id).set(curUser); 
-        const newResponse: ResponseType = {
+        const newResponse: ResponseType<User> = {
           error: false, 
           success: true, 
           data: curUser,
@@ -56,7 +66,7 @@ export const usersRouter = createTRPCRouter({
         return newResponse; 
       }
       catch (e) {
-        const newResponse: ResponseType = {
+        const newResponse: ResponseType<null> = {
           success: false,
           error: false, 
           data: null, 

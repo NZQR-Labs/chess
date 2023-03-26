@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { Configuration, OpenAIApi } from "openai";
+import axios, {type AxiosRequestConfig} from "axios";
 
 import {
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
+import { type ChessPuzzlesApiResponse, type ResponseType, type Puzzle } from "~/types";
 
 export const chessRouter = createTRPCRouter({
   getSecretMessage: protectedProcedure.query(({ctx}) => {
@@ -23,5 +25,54 @@ export const chessRouter = createTRPCRouter({
         prompt: "Hello world",
       }); 
       return completion.data.choices[0]?.text; 
-    })  
+    }),
+  generatePuzzle: protectedProcedure
+    .input(z.object({query: z.string()}))
+    .query(async ({ctx}) => {
+
+      const options: AxiosRequestConfig = {
+        method: "GET",
+        url: "https://chess-puzzles.p.rapidapi.com/",
+        params: {
+          themes: "[\"middlegame\",\"advantage\"]",
+          rating: "1500",
+          themesType: "ALL",
+          playerMoves: "4",
+          count: "1"
+        },
+        headers: {
+          "X-RapidAPI-Key": "6215021120msh364b9d72f9d2b2fp1ba304jsn6e686a50332e",
+          "X-RapidAPI-Host": "chess-puzzles.p.rapidapi.com"
+        }
+      };
+      try {
+        const apiResults = await axios(options);
+        if(apiResults.status === 200 && apiResults.data) {
+          const chessPuzzelResults = apiResults.data as ChessPuzzlesApiResponse;
+          const newResponse: ResponseType<Puzzle | undefined> = {
+            error: false,
+            success: true,
+            message: "Successfully retrieved chess puzzle",
+            data: chessPuzzelResults.puzzles[0]
+          };
+          return newResponse;
+        } else {
+          const newResponse: ResponseType<null> = {
+            error: true,
+            success: false,
+            message: "Error retrieving chess puzzle",
+            data: null
+          };
+          return newResponse;
+        }
+      } catch (error) {
+        const newResponse: ResponseType<null> = {
+          error: true,
+          success: false,
+          message: "Error retrieving chess puzzle",
+          data: null
+        };
+        return newResponse;
+      }
+    }),
 });

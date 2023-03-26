@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import type { Piece, Square } from "react-chessboard/dist/chessboard/types";
@@ -9,31 +9,15 @@ import IllegalMoveModal from "./IllegalMoveAlert";
 
 interface Props {
   width: number;
+  fen?: string;
 }
 
-interface Error {
-  message: string; 
-}
-
-const Board: React.FC<Props> = ({ width }) => {
-  const [game, setGame] = useState(new Chess());
+const Board: React.FC<Props> = ({ width, fen }) => {
+  const [game, setGame] = useState(new Chess(fen));
   const [moveError, setError] = useState<any>();
   const [playAgain, setPlayAgain] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
   const [open, setOpen] = useState(false); 
-
-  useEffect(() => {
-    if (game.turn() === "b") {
-      const possibleMoves = game.moves();
-      if (possibleMoves.length > 0) {
-        const randomIndex = Math.floor(Math.random() * possibleMoves.length);
-        const move = possibleMoves[randomIndex];
-        if (move) {
-          makeMove(move);
-        }
-      }
-    }
-  }, [game]);
 
   const makeMove = (
     move: string | { from: string; to: string; promotion?: string | undefined }
@@ -98,11 +82,8 @@ const Board: React.FC<Props> = ({ width }) => {
 
   return (
     <>
-      <div style={{ display: "flex" }}>
-        <div style={{ marginRight: "20px" }}>
-          <Chessboard boardWidth={width} position={game.fen()} onPieceDrop={onDrop} />
-        </div>
-        <div>
+      <div className="flex">
+        <div className="flex flex-col justify-center">
           {winner ? (
             <PlayAgainAlert
               open={playAgain}
@@ -110,8 +91,12 @@ const Board: React.FC<Props> = ({ width }) => {
               onReset={resetGame}
             />
           ) : (
-            <p>Current player: {game.turn() === "w" ? "White" : "Black"}</p>
+            <kbd className="kbd font-bold mb-5">Current player: {game.turn() === "w" ? "White" : "Black"} </kbd>
           )}
+          <Chessboard boardWidth={width} position={game.fen()} onPieceDrop={onDrop} />
+        </div>
+        <div>
+ 
         </div>
 
         <IllegalMoveModal open={open} setOpen={setOpen} errorMessage={moveError} />

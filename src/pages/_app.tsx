@@ -8,6 +8,7 @@ import { type AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import Navbar from "~/components/Navbar";
+import Footer from "~/components/Footer";
 import "~/styles/globals.css";
 import "../styles/Button.css";
 const publicPages : Array<string> = [];
@@ -28,6 +29,7 @@ function MyApp({ Component, pageProps } : AppProps) {
           <SignedIn>
             <Navbar> 
               <Component {...pageProps} />
+              <Footer />
             </Navbar>
           </SignedIn>
           <SignedOut>

@@ -1,12 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { type NextPage } from "next";
 import Head from "next/head";
-import ChessBoard from "~/components/Chess/chessboard";
-import useBreakPoints from "~/hooks/useBreakPoints";
 import { api } from "~/utils/api";
 
 const Home: NextPage = () => {
-  const {s} = useBreakPoints();
 
   return (
     <>
@@ -17,7 +14,7 @@ const Home: NextPage = () => {
       </Head>
       <main className={"flex min-h-screen flex-col items-center sm:mt-40 md:mt-32 lg:mt-20 xl:mt-12 2xl:mt-10"}>
         <div className="container flex flex-col items-center justify-center px-4">
-          <ChessBoard width={s([300, 400, 500, 500, 450])} />
+          
         </div>
 
       </main>

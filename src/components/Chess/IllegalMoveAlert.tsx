@@ -13,7 +13,7 @@ const IllegalMoveModal: React.FC<Props> = ({open, setOpen, errorMessage}) => {
       <input checked={open} type="checkbox" id="my-modal-6" readOnly className="modal-toggle" />
 
       <div className="modal modal-bottom sm:modal-middle">
-        <div className="modal-box">
+        <div className="modal-box bg-neutral">
           <h3 className="font-bold text-lg">Illegal Move!</h3>          
           <p className="py-4">Invalid move  {(errorMessage || "").split(": ")[1]?.replaceAll("{", "").replaceAll("}", "").replaceAll("\"", "").replaceAll(":", " ").replaceAll(",", " ")}.</p>
           <div className="modal-action">
